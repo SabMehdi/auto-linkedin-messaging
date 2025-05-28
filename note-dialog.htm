@@ -1,0 +1,129 @@
+<div
+  data-test-modal=""
+  role="dialog"
+  tabindex="-1"
+  class="artdeco-modal artdeco-modal--layer-default send-invite"
+  size="medium"
+  aria-labelledby="send-invite-modal"
+>
+  <span class="a11y-text">Début du contenu de la boîte de dialogue.</span>
+  <button
+    aria-label="Ignorer"
+    id="ember2994"
+    class="artdeco-button artdeco-button--circle artdeco-button--muted artdeco-button--2 artdeco-button--tertiary ember-view artdeco-modal__dismiss"
+    data-test-modal-close-btn=""
+  >
+    <svg
+      role="none"
+      aria-hidden="true"
+      class="artdeco-button__icon"
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      data-supported-dps="24x24"
+      data-test-icon="close-medium"
+    >
+      <!---->
+      <use href="#close-medium" width="24" height="24"></use>
+    </svg>
+
+    <span class="artdeco-button__text"> </span>
+  </button>
+
+  <div id="ember3003" class="artdeco-modal__header ember-view">
+    <h2 id="send-invite-modal">Ajoutez une note à votre invitation</h2>
+
+    <!---->
+  </div>
+  <!---->
+  <div id="ember3004" class="artdeco-modal__content ember-view">
+    <!----><!----><!---->
+    <label for="custom-message">
+      <span class="visually-hidden"
+        >Veuillez limiter votre note personnelle à 300&nbsp;caractères.</span
+      >
+      <p class="t-14 pb2">
+        Les membres de LinkedIn sont plus susceptibles d’accepter des
+        invitations qui contiennent une note personnelle.
+      </p>
+    </label>
+    <div class="relative">
+      <textarea
+        name="message"
+        rows="2"
+        placeholder="Ex : nous avons fait connaissance lors de…"
+        id="custom-message"
+        class="ember-text-area ember-view connect-button-send-invite__custom-message"
+        minlength="1"
+      ></textarea>
+      <div class="display-flex align-items-center">
+        <svg
+          role="img"
+          aria-hidden="false"
+          aria-label="Premium"
+          xmlns="http://www.w3.org/2000/svg"
+          width="78"
+          height="8"
+          viewBox="0 0 78 8"
+          data-supported-dps="78x8"
+          data-test-icon="premium-badge-xxxsmall"
+        >
+          <!---->
+          <svg display="var(--hue-web-svg-display-light)">
+            <image
+              href="https://static.licdn.com/aero-v1/sc/h/3068z204ww5pg0wt1qbemtzul"
+              x="0"
+              y="0"
+              width="78"
+              height="8"
+            ></image>
+          </svg>
+          <svg display="var(--hue-web-svg-display-dark)">
+            <image
+              href="https://static.licdn.com/aero-v1/sc/h/181jrk4wmnppkt9vl21cauxpa"
+              x="0"
+              y="0"
+              width="78"
+              height="8"
+            ></image>
+          </svg>
+        </svg>
+
+        <span
+          aria-live="polite"
+          class="t-14 t-black--light flex-1 text-align-right t-black--light"
+        >
+          0/300
+        </span>
+      </div>
+    </div>
+    <!---->
+    <!---->
+  </div>
+  <div
+    id="ember3006"
+    class="artdeco-modal__actionbar ember-view text-align-right"
+  >
+    <!---->
+    <button
+      aria-label="Annuler l’ajout d’une note"
+      id="ember3007"
+      class="artdeco-button artdeco-button--muted artdeco-button--2 artdeco-button--tertiary ember-view mr1"
+    >
+      <!---->
+      <span class="artdeco-button__text"> Annuler </span>
+    </button>
+    <button
+      disabled=""
+      aria-label="Envoyer une invitation"
+      id="ember3008"
+      class="artdeco-button artdeco-button--2 artdeco-button--primary artdeco-button--disabled ember-view ml1"
+    >
+      <!---->
+      <span class="artdeco-button__text"> Envoyer </span>
+    </button>
+  </div>
+
+  <span class="a11y-text">Fin du contenu de la boîte de dialogue.</span>
+</div>
