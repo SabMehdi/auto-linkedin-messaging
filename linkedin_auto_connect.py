@@ -43,7 +43,7 @@ class LinkedInAutoConnect:
     def scroll_to_element(self, element):
         """Scroll element into view and wait a bit"""
         self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", element)
-        time.sleep(1)
+        time.sleep(.5)
 
     def highlight_element(self, element, color="yellow"):
         """Highlight an element with a colored background"""
@@ -141,7 +141,7 @@ class LinkedInAutoConnect:
     def send_connection_requests(self, search_url, connection_note):
         """Send connection requests to people from search results"""
         self.driver.get(search_url)
-        time.sleep(3)
+        time.sleep(1)
         
         page_number = 1
         while True:
@@ -149,7 +149,7 @@ class LinkedInAutoConnect:
             
             # Set zoom to 75%
             self.set_page_zoom(75)
-            time.sleep(1)
+            time.sleep(.5)
             
             try:
                 # Check for connect buttons first
@@ -166,7 +166,7 @@ class LinkedInAutoConnect:
                         if not self.click_button_safely(next_button, "Suivant"):
                             print("Failed to click next button")
                             break
-                        time.sleep(2)
+                        time.sleep(.5)
                         page_number += 1
                         continue
                     except:
@@ -189,8 +189,35 @@ class LinkedInAutoConnect:
                     try:
                         print(f"\nProcessing connection {i} of {len(connect_buttons)}")
                         
-                        # Find the parent li element
-                        li_element = connect_button.find_element(By.XPATH, "./ancestor::li[contains(@class, 'YqPvchDpIQAtSkXEsugKtLYEYIOEbePc')]")
+                        # Find the parent li element using a more robust selector
+                        try:
+                            # First try to get the closest parent li
+                            li_element = connect_button.find_element(By.XPATH, "./ancestor::li[1]")
+                            
+                            # Verify this is a connection card by checking for name
+                            try:
+                                profile_span = li_element.find_element(By.XPATH, ".//span[contains(text(), 'Voir le profil de')]")
+                            except:
+                                # If name not found in immediate li, try going up one more level
+                                li_element = connect_button.find_element(By.XPATH, "./ancestor::li[2]")
+                                profile_span = li_element.find_element(By.XPATH, ".//span[contains(text(), 'Voir le profil de')]")
+                            
+                            print("Successfully found profile card")
+                        except Exception as e:
+                            print(f"Error finding profile card: {str(e)}")
+                            continue
+                        
+                        # Extract user name from the profile link
+                        try:
+                            profile_text = profile_span.text
+                            # Extract only the first name (first word after "de")
+                            full_name = profile_text.replace("Voir le profil de", "").strip()
+                            first_name = full_name.split()[0]  # Get only the first word
+                            personalized_note = connection_note.replace("Bonjour,", f"Bonjour {first_name},")
+                            print(f"Extracted name: {first_name}")
+                        except Exception as e:
+                            print(f"Could not extract name, using default message: {str(e)}")
+                            personalized_note = connection_note
                         
                         # Highlight the current profile card in yellow
                         original_style = self.highlight_element(li_element, "yellow")
@@ -201,55 +228,97 @@ class LinkedInAutoConnect:
                             self.highlight_element(li_element, "lightcoral")
                             continue
                         
-                        time.sleep(1)
+                        time.sleep(.5)
                         
                         # Click "Add note" button
                         try:
+                            print("Waiting for 'Add note' button...")
                             add_note_button = self.wait.until(
                                 EC.element_to_be_clickable(
                                     (By.XPATH, "//button[.//span[text()='Ajouter une note']]")
                                 )
                             )
+                            print("Found 'Add note' button, attempting to click...")
+                            time.sleep(.5)  # Add small delay before clicking
                             if not self.click_button_safely(add_note_button, "Ajouter une note"):
                                 raise Exception("Failed to click add note button")
+                            print("Successfully clicked 'Add note' button")
+                            time.sleep(.5)  # Add delay after clicking
                         except Exception as e:
                             print(f"Error clicking add note button: {str(e)}")
-                            self.highlight_element(li_element, "lightcoral")
-                            continue
+                            # Try an alternative XPath if the first one fails
+                            try:
+                                print("Trying alternative method to find 'Add note' button...")
+                                add_note_button = self.wait.until(
+                                    EC.element_to_be_clickable(
+                                        (By.XPATH, "//button[contains(@aria-label, 'Ajouter une note')]")
+                                    )
+                                )
+                                if not self.click_button_safely(add_note_button, "Ajouter une note"):
+                                    raise Exception("Failed to click add note button (alternative method)")
+                            except Exception as e2:
+                                print(f"Error with alternative method: {str(e2)}")
+                                self.highlight_element(li_element, "lightcoral")
+                                continue
                         
                         # Find and fill the note textarea
                         try:
+                            print("Waiting for note textarea...")
                             note_textarea = self.wait.until(
                                 EC.presence_of_element_located(
                                     (By.ID, "custom-message")
                                 )
                             )
+                            print("Found textarea, clearing existing text...")
                             note_textarea.clear()
-                            time.sleep(0.5)
-                            note_textarea.send_keys(connection_note)
-                            time.sleep(0.5)
+                            time.sleep(.5)  # Add delay after clearing
+                            
+                            print(f"Sending personalized note: {personalized_note[:50]}...")  # Print first 50 chars
+                            note_textarea.send_keys(personalized_note)
+                            time.sleep(.5)  # Add delay after typing
+                            print("Successfully entered message")
                         except Exception as e:
                             print(f"Error filling note: {str(e)}")
-                            self.highlight_element(li_element, "lightcoral")
-                            continue
+                            try:
+                                print("Trying alternative method to find textarea...")
+                                note_textarea = self.driver.find_element(By.CSS_SELECTOR, "textarea#custom-message")
+                                note_textarea.clear()
+                                time.sleep(.5)
+                                note_textarea.send_keys(personalized_note)
+                            except Exception as e2:
+                                print(f"Error with alternative textarea method: {str(e2)}")
+                                self.highlight_element(li_element, "lightcoral")
+                                continue
                         
                         # Click send button
                         try:
+                            print("Waiting for 'Send' button...")
                             send_button = self.wait.until(
                                 EC.element_to_be_clickable(
                                     (By.XPATH, "//button[.//span[text()='Envoyer']]")
                                 )
                             )
+                            print("Found 'Send' button, attempting to click...")
+                            time.sleep(.5)  # Add delay before clicking
                             if not self.click_button_safely(send_button, "Envoyer"):
                                 raise Exception("Failed to click send button")
+                            print("Successfully clicked 'Send' button")
+                            time.sleep(.5)  # Add delay after sending
                         except Exception as e:
                             print(f"Error clicking send button: {str(e)}")
-                            self.highlight_element(li_element, "lightcoral")
-                            continue
+                            try:
+                                print("Trying alternative method to find 'Send' button...")
+                                send_button = self.driver.find_element(By.CSS_SELECTOR, "button[aria-label='Envoyer maintenant']")
+                                if not self.click_button_safely(send_button, "Envoyer"):
+                                    raise Exception("Failed to click send button (alternative method)")
+                            except Exception as e2:
+                                print(f"Error with alternative send method: {str(e2)}")
+                                self.highlight_element(li_element, "lightcoral")
+                                continue
                         
                         print(f"Connection request {i} sent successfully")
                         self.highlight_element(li_element, "lightgreen")
-                        time.sleep(1)
+                        time.sleep(.5)
                         
                     except Exception as e:
                         print(f"Error sending connection request {i}: {str(e)}")
@@ -267,7 +336,7 @@ class LinkedInAutoConnect:
                     if not self.click_button_safely(next_button, "Suivant"):
                         print("Failed to click next button")
                         break
-                    time.sleep(2)
+                    time.sleep(.5)
                     page_number += 1
                     
                 except TimeoutException:
@@ -288,7 +357,7 @@ class LinkedInAutoConnect:
                     if not self.click_button_safely(next_button, "Suivant"):
                         print("Failed to click next button")
                         break
-                    time.sleep(2)
+                    time.sleep(.5)
                     page_number += 1
                 except:
                     print("No more pages available")
@@ -300,13 +369,12 @@ class LinkedInAutoConnect:
 
 def main():
     # Your LinkedIn search URL (the page with search results)
-    search_url = "https://www.linkedin.com/search/results/people/?keywords=recruteur&network=%5B%22S%22%2C%22O%22%5D&origin=GLOBAL_SEARCH_HEADER&sid=*6v"
+    search_url = "https://www.linkedin.com/search/results/people/?activelyHiringForJobTitles=%5B%22-100%22%5D&geoUrn=%5B%22105015875%22%5D&keywords=recruteur&origin=FACETED_SEARCH&sid=!!e"
     
     # Your personalized connection note
-    connection_note = """Bonjour
-Je me permets de vous contacter pour savoir si vous avez actuellement des opportunités pour un poste de développeur junior fullstack frontend ou backend. Je suis motivé, curieux, et prêt à apprendre au sein d'une équipe dynamique.
-Merci d'avance pour votre retour,
-Cordialement
+    connection_note = """Bonjour,
+Je me permets de vous contacter pour savoir si vous avez des opportunités pour un poste de développeur junior (frontend, backend ou fullstack). Je suis motivé, curieux et désireux d'apprendre.
+Bien cordialement,
 Al Mehdi SABER"""
     
     bot = LinkedInAutoConnect()
