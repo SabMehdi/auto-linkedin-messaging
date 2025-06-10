@@ -1,6 +1,3 @@
-Here’s a README for your LinkedIn Auto Connect project, based on the code you provided:
-
----
 
 # LinkedIn Auto Connect Bot
 
@@ -90,5 +87,3 @@ The script will:
 This project is for educational purposes only. Use at your own risk. Automating actions on LinkedIn may violate their terms of service.
 
 ---
-
-Feel free to modify this README to better fit your needs!
